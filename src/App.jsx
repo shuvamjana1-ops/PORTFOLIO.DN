@@ -181,13 +181,13 @@ const App = () => {
 
       <section id="work" style={{ padding: '100px 10%' }}>
         <h2 className="dark-matter-title" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_SHADOW_VAULT</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(45%, 1fr))', gap: '80px 40px' }}>
           {Object.entries(library).map(([category, items]) => (
-            <div key={category}>
+            <div key={category} style={{ borderLeft: '1px solid rgba(255,215,0,0.1)', paddingLeft: '20px' }}>
               <h3 className="mono-detail" style={{ marginBottom: '30px', color: '#FFD700' }}>// CATEGORY: {category}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
                 {items.map((item, idx) => (
-                  <motion.div key={idx} className="neon-trace-card" whileHover={{ scale: 1.02 }} style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
+                  <motion.div key={idx} className="neon-trace-card" whileHover={{ scale: 1.05 }} style={{ aspectRatio: '1', overflow: 'hidden' }}>
                     {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </motion.div>
                 ))}
