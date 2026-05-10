@@ -4,124 +4,125 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import gsap from 'gsap';
 
-// --- THE IDENTITY VAULT ---
+// Local Assets
 import LogoImg from './assets/identity/logo.png';
 const SumitImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800";
 const ShuvamImg = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800";
 
 // --- THE AUTO-SYNC ENGINE ---
-// This logic scans your folders and builds the library automatically.
 const useAutoLibrary = () => {
   return useMemo(() => {
     const library = {};
     const assets = import.meta.glob('./assets/work/**/*.{png,jpg,jpeg,svg,webp,mp4}', { eager: true });
-    
     Object.entries(assets).forEach(([path, module]) => {
       const parts = path.split('/');
       const category = parts[parts.length - 2].toUpperCase();
       if (!library[category]) library[category] = [];
-      library[category].push({
-        url: module.default,
-        type: path.endsWith('.mp4') ? 'video' : 'image',
-        name: parts[parts.length - 1].split('.')[0]
-      });
+      library[category].push({ url: module.default, type: path.endsWith('.mp4') ? 'video' : 'image' });
     });
     return library;
   }, []);
 };
 
-// --- DARK MATTER COMPONENTS ---
+// --- CINEMATIC COMPONENTS ---
 
-const EclipsePreloader = ({ onComplete }) => {
-  return (
-    <motion.div 
-      className="preloader"
-      style={{ position: 'fixed', inset: 0, background: '#050505', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 10000 }}
-      exit={{ opacity: 0 }}
-    >
-      <div style={{ position: 'relative', width: '300px', height: '300px' }}>
-        <motion.div 
-          style={{ position: 'absolute', inset: 0, borderRadius: '50%', border: '1px solid #FFD700', boxShadow: '0 0 30px #FFD700' }}
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-          <h1 className="dark-matter-title" style={{ fontSize: '1.5rem', margin: 0 }}>D'NINJA</h1>
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: '100%' }}
-            transition={{ duration: 3, ease: "easeInOut" }}
-            onAnimationComplete={onComplete}
-            style={{ height: '1px', background: '#FFD700', marginTop: '10px' }}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
+const MolecularPreloader = ({ onComplete }) => {
+  const canvasRef = useRef();
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    let phase = 'converge';
+
+    const init = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      for(let i=0; i<1500; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          tx: canvas.width/2 + (Math.random()-0.5)*300,
+          ty: canvas.height/2 + (Math.random()-0.5)*100,
+          vx: (Math.random()-0.5)*10,
+          vy: (Math.random()-0.5)*10,
+          size: Math.random() * 2
+        });
+      }
+    };
+
+    const animate = () => {
+      ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        if(phase === 'converge') {
+          p.x += (p.tx - p.x) * 0.05;
+          p.y += (p.ty - p.y) * 0.05;
+        } else {
+          p.x += p.vx;
+          p.y += p.vy;
+        }
+        ctx.fillStyle = '#D4AF37';
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      });
+      requestAnimationFrame(animate);
+    };
+
+    init();
+    animate();
+    setTimeout(() => phase = 'explode', 3000);
+    setTimeout(onComplete, 4000);
+  }, []);
+
+  return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#050505' }} />;
 };
 
-const InkNebula = ({ velocity }) => {
+const InkBackground = ({ scrollVelocity }) => {
   const meshRef = useRef();
   useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
-      meshRef.current.material.uniforms.uVelocity.value = velocity * 10;
-    }
+    meshRef.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
+    meshRef.current.material.uniforms.uScroll.value = scrollVelocity;
   });
 
   const shaderArgs = useMemo(() => ({
-    uniforms: { uTime: { value: 0 }, uVelocity: { value: 0 } },
+    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
     vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `uniform float uTime; uniform float uVelocity; varying vec2 vUv; void main() { vec2 p = vUv * 2.0 - 1.0; float d = length(p); float ink = sin(d * 10.0 - uTime * 2.0 + uVelocity) * 0.5 + 0.5; gl_FragColor = vec4(vec3(0.02, 0.02, 0.02) * ink, 1.0); }`
+    fragmentShader: `
+      uniform float uTime;
+      uniform float uScroll;
+      varying vec2 vUv;
+      void main() {
+        vec2 p = vUv * 2.0 - 1.0;
+        float d = length(p);
+        float ink = sin(d * 8.0 - uTime + uScroll * 0.1) * 0.5 + 0.5;
+        gl_FragColor = vec4(vec3(0.01) * ink, 1.0);
+      }
+    `
   }), []);
 
   return (
     <mesh ref={meshRef} scale={[50, 50, 1]}>
       <planeGeometry />
-      <shaderMaterial args={[shaderArgs]} transparent opacity={0.5} />
+      <shaderMaterial args={[shaderArgs]} />
     </mesh>
   );
 };
 
-const NoirPortrait = ({ name, role, image, skills }) => {
-  const [hovered, setHovered] = useState(false);
-
+const CinematicCard = ({ name, role, image, skills }) => {
   return (
     <motion.div 
-      className="neon-trace-card"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{ height: '350px', background: 'rgba(10,10,10,0.8)', padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', border: '1px solid rgba(255,255,255,0.03)' }}
+      className="smoked-glass z-card"
+      style={{ height: '400px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative', overflow: 'hidden' }}
     >
-      <div style={{ position: 'relative', width: '120px', height: '120px', marginBottom: '25px' }}>
-        <motion.div 
-          animate={{ scale: hovered ? 1.1 : 1, borderColor: hovered ? '#FFD700' : 'rgba(255,255,255,0.1)' }}
-          style={{ width: '100%', height: '100%', borderRadius: '50%', border: '2px solid', overflow: 'hidden', padding: '5px' }}
-        >
-          <img src={image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
-        </motion.div>
-        {hovered && <motion.div layoutId="scan" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: '#FFD700', boxShadow: '0 0 10px #FFD700' }} animate={{ top: ['0%', '100%', '0%'] }} transition={{ duration: 2, repeat: Infinity }} />}
+      <motion.img 
+        src={image} 
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -1, opacity: 0.3, filter: 'grayscale(1)' }}
+        whileHover={{ opacity: 0.8, filter: 'grayscale(0)' }}
+      />
+      <h3 className="refract-text" style={{ fontSize: '1.5rem' }}>{name}</h3>
+      <p className="mono-detail" style={{ color: '#D4AF37' }}>{role}</p>
+      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+        {skills.map((s, i) => <span key={i} style={{ fontSize: '0.6rem', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px' }}>{s.name}</span>)}
       </div>
-      
-      <h3 className="dark-matter-title" style={{ fontSize: '1rem', letterSpacing: '5px' }}>{name}</h3>
-      <p className="mono-detail" style={{ fontSize: '0.6rem', color: '#FFD700', marginTop: '5px' }}>{role}</p>
-      
-      <AnimatePresence>
-        {hovered && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}
-          >
-            {skills.map((s, i) => (
-              <span key={i} className="mono-detail" style={{ fontSize: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '4px 8px' }}>
-                {s.name}
-              </span>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 };
@@ -137,57 +138,60 @@ const App = () => {
   const cursorRef = useRef(null);
 
   useEffect(() => {
-    const onMove = (e) => { if (cursorRef.current) gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.6, ease: "power2.out" }); };
+    const onMove = (e) => { if (cursorRef.current) gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power3.out" }); };
+    const onScrollUpdate = () => {
+      document.documentElement.style.setProperty('--scroll-vel', Math.min(Math.abs(scrollVel.get()) / 10, 10));
+    };
     window.addEventListener('mousemove', onMove);
-    return () => window.removeEventListener('mousemove', onMove);
+    const scrollUnsub = scrollY.on("change", onScrollUpdate);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      scrollUnsub();
+    };
   }, []);
 
   return (
-    <div style={{ background: '#050505', color: '#E0E0E0', minHeight: '100vh', position: 'relative' }}>
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}><Canvas><InkNebula velocity={smoothVel} /></Canvas></div>
-      <div ref={cursorRef} className="aura-cursor" style={{ position: 'fixed', width: '20px', height: '20px', border: '1px solid #FFD700', borderRadius: '50%', pointerEvents: 'none', zIndex: 10000, transform: 'translate(-50%, -50%)' }} />
+    <div style={{ background: '#050505', color: '#E0E0E0', minHeight: '100vh' }}>
+      <AnimatePresence>{loading && <MolecularPreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
+      <div ref={cursorRef} className="prismatic-cursor" />
+      
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
+        <Canvas><InkBackground scrollVelocity={smoothVel.get()} /></Canvas>
+      </div>
 
-      <AnimatePresence>{loading && <EclipsePreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
-
-      <nav className="smoked-glass" style={{ position: 'fixed', top: 0, width: '100%', padding: '30px 10%', display: 'flex', justifyContent: 'space-between', zIndex: 1000 }}>
+      <nav className="navbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <img src={LogoImg} style={{ height: '25px', filter: 'invert(1)' }} alt="Logo" />
-          <h2 className="dark-matter-title" style={{ fontSize: '1rem', margin: 0 }}>D'NINJA</h2>
+          <img src={LogoImg} style={{ height: '30px', filter: 'invert(1)' }} alt="Logo" />
+          <span className="refract-text" style={{ fontSize: '1.2rem' }}>D'NINJA</span>
         </div>
-        <div style={{ display: 'flex', gap: '40px' }}>
+        <div style={{ display: 'flex', gap: '50px' }}>
           {['HOME', 'ABOUT', 'WORK', 'CONTACT'].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`} className="mono-detail active-glow" style={{ textDecoration: 'none' }}>{l}</a>
+            <a key={l} href={`#${l.toLowerCase()}`} className="nav-link">{l}</a>
           ))}
         </div>
       </nav>
 
       <section id="home" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 10%' }}>
-        <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 1 }}>
-          <div className="mono-detail">SOLDIER AUTHENTICATED. GHOST-MODE: ACTIVE. NIGHT-OPS SYNCHRONIZED.</div>
-          <h1 className="dark-matter-title" style={{ fontSize: '12vw', margin: 0 }}>D'NINJA</h1>
-        </motion.div>
+        <div style={{ fontSize: '0.7rem', letterSpacing: '5px', opacity: 0.5, marginBottom: '20px' }}>SOLDIER IDENTIFIED. GHOST-MODE: ACTIVE. SECTOR: WEST BENGAL.</div>
+        <h1 className="refract-text" style={{ fontSize: '15vw', margin: 0, lineHeight: 0.8 }}>D'NINJA</h1>
       </section>
 
       <section id="about" style={{ padding: '100px 10%' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-          <div style={{ width: '300px' }}>
-            <NoirPortrait name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'VisDev'}]} />
-          </div>
-          <div style={{ width: '300px' }}>
-            <NoirPortrait name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'GLSL'}, {name: 'Architecture'}]} />
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px' }}>
+          <CinematicCard name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'Motion'}]} />
+          <CinematicCard name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'Code'}, {name: 'Physics'}]} />
         </div>
       </section>
 
       <section id="work" style={{ padding: '100px 10%' }}>
-        <h2 className="dark-matter-title" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_SHADOW_VAULT</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(45%, 1fr))', gap: '80px 40px' }}>
+        <h2 className="refract-text" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_ARCHIVE</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '80px' }}>
           {Object.entries(library).map(([category, items]) => (
-            <div key={category} style={{ borderLeft: '1px solid rgba(255,215,0,0.1)', paddingLeft: '20px' }}>
-              <h3 className="mono-detail" style={{ marginBottom: '30px', color: '#FFD700' }}>// CATEGORY: {category}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '15px' }}>
+            <div key={category}>
+              <h3 className="mono-detail" style={{ color: '#D4AF37', marginBottom: '30px' }}>// CATEGORY: {category}</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
                 {items.map((item, idx) => (
-                  <motion.div key={idx} className="neon-trace-card" whileHover={{ scale: 1.05 }} style={{ aspectRatio: '1', overflow: 'hidden' }}>
+                  <motion.div key={idx} className="smoked-glass z-card" whileHover={{ scale: 1.05 }} style={{ aspectRatio: '1', overflow: 'hidden' }}>
                     {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </motion.div>
                 ))}
@@ -197,18 +201,14 @@ const App = () => {
         </div>
       </section>
 
-      <section id="contact" style={{ padding: '100px 10%', textAlign: 'center' }}>
-        <h2 className="dark-matter-title" style={{ fontSize: '4rem', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '60px' }}>
+      <footer style={{ padding: '100px 10%', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <h2 className="refract-text" style={{ fontSize: '5rem', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '80px' }}>
           {['INSTAGRAM', 'WHATSAPP', 'EMAIL'].map(c => (
-            <motion.a key={c} href="#" className="mono-detail active-glow" whileHover={{ letterSpacing: '8px' }}>{c}</motion.a>
+            <a key={c} href="#" className="nav-link" style={{ fontSize: '0.8rem' }}>{c}</a>
           ))}
         </div>
-      </section>
-
-      <footer style={{ padding: '60px 10%', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <div className="ekg-line"><div className="ekg-pulse" style={{ animationDuration: `${2 / (1 + smoothVel.get() * 0.1)}s` }} /></div>
-        <div className="mono-detail" style={{ marginTop: '20px', textAlign: 'center' }}>© 2026 D'NINJA SYSTEM. ALL RIGHTS RESERVED.</div>
+        <div style={{ marginTop: '100px', opacity: 0.2, fontSize: '0.6rem', letterSpacing: '5px' }}>© 2026 D'NINJA CINEMATIC. ALL SYSTEMS OPERATIONAL.</div>
       </footer>
     </div>
   );

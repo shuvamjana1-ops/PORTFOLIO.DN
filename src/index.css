@@ -1,14 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@100;300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@100;300;400&display=swap');
 
 :root {
   --bg-obsidian: #050505;
-  --bg-carbon: #0A0A0A;
   --text-mercury: #E0E0E0;
-  --accent-bio-gold: #FFD700;
-  --mercury-silver: #B0B0B0;
+  --accent-gold: #D4AF37;
+  --glass-bg: rgba(15, 15, 15, 0.7);
   --glass-blur: 30px;
   --font-header: 'Syne', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+  --scroll-vel: 0;
 }
 
 * {
@@ -27,112 +27,89 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Digital Noise Texture */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* Cinematic Vignette */
+/* Film Grain Overlay */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
-  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 9999;
+  mix-blend-mode: overlay;
 }
 
-/* Typography Styles */
-.dark-matter-title {
+/* Text Refraction Effect */
+.refract-text {
   font-family: var(--font-header);
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--text-mercury);
+  letter-spacing: 0.1em;
+  position: relative;
+  transition: text-shadow 0.1s ease;
+  text-shadow: 
+    calc(var(--scroll-vel) * 1px) 0 0 rgba(255,0,0,0.5),
+    calc(var(--scroll-vel) * -1px) 0 0 rgba(0,255,255,0.5);
 }
 
-.mono-detail {
-  font-family: var(--font-mono);
-  font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: 0.65rem;
-  color: var(--mercury-silver);
-}
-
-/* Smoked Glass Navigation */
+/* Smoked Glass Containers */
 .smoked-glass {
-  background: rgba(10, 10, 10, 0.6);
+  background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-image: linear-gradient(135deg, rgba(255,255,255,0.1), transparent) 1;
 }
 
-.active-glow {
-  text-shadow: 0 0 15px var(--accent-bio-gold);
-  color: #fff !important;
+/* Prismatic Cursor */
+.prismatic-cursor {
+  position: fixed;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  backdrop-filter: blur(10px) saturate(2);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.05);
 }
 
-/* Museum of Shadows - Neon Trace */
-.neon-trace-card {
-  position: relative;
-  background: var(--bg-carbon);
-  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-  overflow: hidden;
-}
-
-.neon-trace-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid transparent;
-  transition: border-color 0.6s;
-}
-
-.neon-trace-card:hover::after {
-  border-color: var(--accent-bio-gold);
-  box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
-}
-
-/* Flicker Animation */
-@keyframes neon-flicker {
-  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
-  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
-}
-
-.flicker {
-  animation: neon-flicker 2s infinite;
-}
-
-/* EKG Pulse footer line */
-.ekg-line {
+/* Navigation - Cinematic */
+.navbar {
+  position: fixed;
+  top: 0;
   width: 100%;
-  height: 2px;
-  background: var(--bg-carbon);
-  position: relative;
-  overflow: hidden;
+  padding: 40px 10%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1000;
 }
 
-.ekg-pulse {
-  position: absolute;
-  width: 50px;
-  height: 100%;
-  background: var(--accent-bio-gold);
-  filter: blur(4px);
-  box-shadow: 0 0 15px var(--accent-bio-gold);
-  animation: pulse-move 2s infinite linear;
+.nav-link {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  text-decoration: none;
+  color: var(--text-mercury);
+  opacity: 0.5;
+  transition: opacity 0.3s, letter-spacing 0.3s;
 }
 
-@keyframes pulse-move {
-  0% { left: -10%; opacity: 0; }
-  50% { opacity: 1; }
-  100% { left: 110%; opacity: 0; }
+.nav-link:hover {
+  opacity: 1;
+  letter-spacing: 8px;
+  color: var(--accent-gold);
+}
+
+/* Z-Axis Spring Cards */
+.z-card {
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.z-card:hover {
+  transform: translateZ(50px) scale(1.05);
+  z-index: 10;
 }
