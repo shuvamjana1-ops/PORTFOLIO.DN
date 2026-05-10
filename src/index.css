@@ -1,25 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;700;900&display=swap');
 
-:root {
-  --bg-dark: #070707;
-  --glass-bg: rgba(255, 255, 255, 0.03);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-inner-glow: inset 0 0 2px 2px rgba(255, 255, 255, 0.05);
-  --glass-outer-stroke: 0 0 0 1px rgba(255, 255, 255, 0.02);
-  --glass-blur: 32px;
+  --bg-dark: #050505;
+  --bg-grid: #111111;
+  --glass-bg: rgba(0, 0, 0, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-inner-glow: inset 0 0 10px rgba(255, 255, 255, 0.02);
+  --glass-blur: 20px;
   --accent-cyan: #00ffff;
   --accent-violet: #8b5cf6;
   --accent-color: #ffffff;
-  --text-dim: rgba(255, 255, 255, 0.4);
+  --text-dim: rgba(255, 255, 255, 0.3);
   --font-main: 'Outfit', sans-serif;
-  --lens-size: 180px;
+  --aura-size: 60px;
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  cursor: none !important; /* Hide default cursor for liquid cursor */
+  cursor: none !important; /* Hide default cursor for Aura */
+  transition: font-weight 0.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 body {
@@ -54,33 +54,43 @@ body {
   mix-blend-mode: overlay;
 }
 
-/* Refractive Lens Cursor */
-.lens-cursor {
+/* Aura Cursor */
+.aura-cursor {
   position: fixed;
-  width: var(--lens-size);
-  height: var(--lens-size);
+  width: var(--aura-size);
+  height: var(--aura-size);
   border-radius: 50%;
   pointer-events: none;
   z-index: 9999;
-  backdrop-filter: blur(2px) brightness(1.1) contrast(1.1);
-  filter: url(#chromatic-aberration);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 
-    inset 0 0 20px rgba(255, 255, 255, 0.1),
-    0 0 40px rgba(0, 255, 255, 0.1);
-  transform: translate(-50%, -50%) scale(1);
-  transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1);
-  overflow: hidden;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.3) 0%, transparent 70%);
+  filter: blur(8px);
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+  mix-blend-mode: screen;
 }
 
-.lens-cursor::after {
-  content: '';
-  position: absolute;
+.aura-breathing {
+  animation: aura-breathe 2s infinite ease-in-out;
+}
+
+@keyframes aura-breathe {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+  50% { transform: translate(-50%, -50%) scale(1.5); opacity: 0.8; }
+}
+
+/* Bento Grid Background */
+.bento-grid {
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at center, transparent 30%, rgba(255, 255, 255, 0.05) 100%);
+  background-image: 
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 80px 80px;
+  z-index: -1;
+  opacity: 0.2;
 }
 
 .main-wrapper {
@@ -218,14 +228,11 @@ body {
 
 .hero-title {
   font-size: clamp(3rem, 10vw, 8rem);
-  font-weight: 900;
+  font-weight: 100;
   line-height: 0.9;
   margin-bottom: 20px;
-  background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.4) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  color: #fff;
+  transition: font-weight 0.2s ease;
 }
 
 .hero-quote {
@@ -442,20 +449,68 @@ body {
   animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-.glass-btn {
-  padding: 15px 40px;
-  border-radius: 50px;
-  text-decoration: none;
-  color: #fff;
-  font-weight: 600;
-  margin: 10px;
-  display: inline-block;
-  transition: all 0.3s ease;
+/* Quantum Link Orbs */
+.contact-links {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 60px;
 }
 
-.glass-btn:hover {
-  background: rgba(255,255,255,0.1);
-  transform: translateY(-5px);
+.floating-orb {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  position: relative;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.floating-orb::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: all 0.5s ease;
+  z-index: -1;
+  filter: blur(15px);
+}
+
+.floating-orb:hover {
+  transform: scale(1.2);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+}
+
+.floating-orb:hover::before {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 0.3;
+}
+
+@keyframes ping {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.orb-ping {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--accent-cyan);
+  border-radius: 50%;
+  animation: ping 1.5s infinite ease-out;
+  pointer-events: none;
 }
 
 /* Responsive */

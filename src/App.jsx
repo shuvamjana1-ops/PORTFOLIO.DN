@@ -15,6 +15,7 @@ const App = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isShaking, setIsShaking] = useState(false);
   const [navStyle, setNavStyle] = useState({ left: 0, width: 0 });
+  const [isAuraIdle, setIsAuraIdle] = useState(true);
   const cursorRef = useRef(null);
   const cursorLiquidRef = useRef(null);
 
@@ -48,27 +49,46 @@ const App = () => {
     const onMouseMove = (e) => {
       const { clientX, clientY } = e;
       setMousePos({ x: clientX, y: clientY });
-      document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
+      setIsAuraIdle(false);
+      
+      // Comet Tail Physics
+      if (cursorRef.current) {
+        gsap.to(cursorRef.current, { 
+          x: clientX, 
+          y: clientY, 
+          duration: 0.5, 
+          ease: "power2.out"
+        });
+      }
 
-      if (cursorRef.current) gsap.to(cursorRef.current, { x: clientX - 10, y: clientY - 10, duration: 0.1 });
-      if (cursorLiquidRef.current) gsap.to(cursorLiquidRef.current, { x: clientX - 20, y: clientY - 20, duration: 0.3 });
+      // Weight Shift Logic (Dynamic Font Weight)
+      const elements = document.querySelectorAll('.hero-title, .hero-quote, .nav-link');
+      elements.forEach(el => {
+        const rect = el.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        const dist = Math.sqrt(Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2));
+        
+        if (dist < 150) {
+          const weight = Math.max(100, Math.min(900, 900 - (dist * 5)));
+          el.style.fontWeight = weight;
+        } else {
+          el.style.fontWeight = 100;
+        }
+      });
     };
     
-    const onClick = () => {
-      if (!isInitialized) {
-        setIsInitialized(true);
-        setLoading(false);
-        playPowerOn();
-      }
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 200);
+    const onMouseStop = gsap.delayedCall(0.1, () => setIsAuraIdle(true));
+    
+    const handleMove = (e) => {
+      onMouseMove(e);
+      onMouseStop.restart(true);
     };
 
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', handleMove);
     window.addEventListener('click', onClick);
     return () => {
-      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mousemove', handleMove);
       window.removeEventListener('click', onClick);
     };
   }, [isInitialized]);
@@ -87,27 +107,19 @@ const App = () => {
   };
 
   const formatGreeting = () => {
-    return `STATUS: ACTIVE // SYSTEM_SYNCHRONIZED_WBT [WEST_BENGAL_TIME]. WELCOME, SOLDIER.`;
+    return `STATUS: GHOST // ENVIRONMENT: WEST BENGAL. WELCOME BACK, SOLDIER. MISSION: EXCELLENCE.`;
   };
 
   return (
     <div className={`main-wrapper ${isShaking ? 'shake' : ''}`}>
+      <div className="bento-grid"></div>
       <Background />
       
-      {/* Global Lens Filter */}
-      <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-        <filter id="chromatic-aberration">
-          <feColorMatrix type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-          <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
-          <feOffset in="red" dx="2" dy="0" result="red-offset" />
-          <feOffset in="blue" dx="-2" dy="0" result="blue-offset" />
-          <feBlend in="red-offset" in2="green" mode="screen" result="rg" />
-          <feBlend in="rg" in2="blue-offset" mode="screen" />
-        </filter>
-      </svg>
-
-      <div className="lens-cursor" style={{ left: mousePos.x, top: mousePos.y }}></div>
+      {/* Aura Cursor */}
+      <div 
+        ref={cursorRef}
+        className={`aura-cursor ${isAuraIdle ? 'aura-breathing' : ''}`}
+      ></div>
 
       <AnimatePresence>
         {loading && (
@@ -116,8 +128,16 @@ const App = () => {
             exit={{ opacity: 0, scale: 1.5, filter: 'blur(20px)' }}
             transition={{ duration: 0.8, ease: "circOut" }}
           >
-            <div style={{ position: 'relative' }}>
-              {/* Liquid Fill SVG Text */}
+            <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              {/* Hydro-Kinetic Splash Drop */}
+              <motion.div 
+                initial={{ y: -500, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1.5, ease: "circIn" }}
+                style={{ width: '10px', height: '10px', background: 'var(--accent-cyan)', borderRadius: '50%', marginBottom: '20px' }}
+              ></motion.div>
+
+              {/* Liquid Splash Text */}
               <svg viewBox="0 0 400 100" style={{ width: '600px', fontWeight: '900', letterSpacing: '10px' }}>
                 <defs>
                   <linearGradient id="liquid" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -125,11 +145,14 @@ const App = () => {
                     <stop offset="100%" stopColor="var(--accent-cyan)" />
                   </linearGradient>
                 </defs>
-                <text x="50%" y="50%" dy=".35em" textAnchor="middle" className="liquid-text-bg" style={{ fill: 'rgba(255,255,255,0.05)', stroke: 'rgba(255,255,255,0.1)', strokeWidth: '1px' }}>
+                <text x="50%" y="50%" dy=".35em" textAnchor="middle" style={{ fill: 'rgba(255,255,255,0.05)', stroke: 'rgba(255,255,255,0.1)', strokeWidth: '1px' }}>
                   D'NINJA
                 </text>
                 <motion.text 
                   x="50%" y="50%" dy=".35em" textAnchor="middle" 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 1.5, duration: 0.1 }}
                   style={{ 
                     fill: 'var(--accent-cyan)',
                     clipPath: 'url(#wave-clip)'
@@ -142,9 +165,9 @@ const App = () => {
                     x="0" width="400" 
                     initial={{ y: 100, height: 0 }}
                     animate={{ y: 0, height: 100 }}
-                    transition={{ duration: 3, ease: "linear" }}
+                    transition={{ delay: 1.5, duration: 1.5, ease: "power4.out" }}
                     onAnimationComplete={() => {
-                      setTimeout(() => setLoading(false), 500);
+                      setTimeout(() => setLoading(false), 800);
                     }}
                   />
                 </clipPath>
@@ -182,10 +205,15 @@ const App = () => {
 
       <section id="home" className="hero">
         <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 1 }}>
-          <div className="hero-greeting" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
-            {formatGreeting()}
+          <div className="intelligence-node" style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+            <RingClock time={time} />
+            <div>
+              <div className="hero-greeting" style={{ fontFamily: 'monospace', fontSize: '0.8rem' }}>
+                {formatGreeting()}
+              </div>
+              <h1 className="hero-title">D'NINJA</h1>
+            </div>
           </div>
-          <h1 className="hero-title" style={{ textShadow: '0 0 30px rgba(0,255,255,0.3)' }}>D'NINJA</h1>
           <p className="hero-quote">"Architecting digital shadows through high-fidelity precision."</p>
           <div className="open-to-work">
             <div className="pulse-dot"></div>
@@ -212,53 +240,55 @@ const App = () => {
         </div>
       </section>
 
-      <section id="work" className="work-section">
-        <h2 style={{ fontSize: '3rem', marginBottom: '60px', textAlign: 'center' }}>DATA_ARCHIVE</h2>
+      <section id="work" className="work-section" style={{ overflow: 'hidden' }}>
+        <h2 style={{ fontSize: '3rem', marginBottom: '60px', textAlign: 'center', fontWeight: 100 }}>CINEMATIC_VAULT</h2>
         
-        {/* Water Ripple Filter */}
-        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-          <filter id="ripple">
-            <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="1" result="noise">
-              <animate attributeName="baseFrequency" values="0.01;0.015;0.01" dur="5s" repeatCount="indefinite" />
-            </feTurbulence>
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" />
-          </filter>
-        </svg>
+        {/* Cinematic Background Immersion */}
+        <div id="vault-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', z-index: -2, opacity: 0, transition: 'opacity 1s ease', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(50px) brightness(0.3)' }}></div>
 
         {Object.entries(catalog).map(([cat, items]) => (
           <div key={cat} style={{ marginBottom: '100px', position: 'relative' }}>
             <h3 style={{ letterSpacing: '8px', color: 'var(--accent-cyan)', fontSize: '0.8rem', marginBottom: '30px' }}>
               // {cat}
             </h3>
-            <motion.div 
-              className="work-carousel"
-              drag="x"
-              dragConstraints={{ left: -((items.length - 1) * 430), right: 0 }}
-              style={{ display: 'flex', gap: '30px', cursor: 'grab' }}
-              whileTap={{ cursor: 'grabbing', filter: 'url(#ripple)' }}
+            <div 
+              className="work-strip"
+              style={{ display: 'flex', gap: '50px', overflowX: 'auto', paddingBottom: '30px', scrollbarWidth: 'none' }}
+              onMouseEnter={() => {
+                if (items[0]) {
+                  const bg = document.getElementById('vault-bg');
+                  bg.style.backgroundImage = `url(${items[0]})`;
+                  bg.style.opacity = 0.5;
+                }
+              }}
+              onMouseLeave={() => {
+                document.getElementById('vault-bg').style.opacity = 0;
+              }}
             >
               {items.map((img, i) => (
                 <motion.div 
                   key={i} 
-                  className="work-item glass-skeuo"
-                  whileHover={{ scale: 0.98 }}
-                  style={{ minWidth: '400px', height: '250px', borderRadius: '20px', overflow: 'hidden' }}
+                  className="work-item glass-skeuo z-expand"
+                  whileHover={{ scale: 1.05, zIndex: 10 }}
+                  style={{ minWidth: '500px', height: '300px', borderRadius: '5px', overflow: 'hidden', flexShrink: 0 }}
                 >
-                  <img src={img} alt={cat} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8 }} />
+                  <img src={img} alt={cat} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </motion.div>
               ))}
-              {items.length === 0 && <div className="glass-skeuo" style={{ padding: '40px', width: '100%', opacity: 0.3 }}>EMPTY_NODE</div>}
-            </motion.div>
+            </div>
           </div>
         ))}
       </section>
 
       <section id="contact" className="contact-section">
-        <h2 style={{ fontSize: '4rem', marginBottom: '40px' }}>ESTABLISH_COMM</h2>
+        <h2 style={{ fontSize: '4rem', marginBottom: '40px', fontWeight: 100 }}>ESTABLISH_COMM</h2>
         <div className="contact-links">
-          <a href="#" className="glass-btn glass-skeuo z-expand">Instagram</a>
-          <a href="#" className="glass-btn glass-skeuo z-expand">WhatsApp</a>
-          <a href="mailto:contact@dninja.com" className="glass-btn glass-skeuo z-expand">Email</a>
+          {['Instagram', 'WhatsApp', 'Email'].map(link => (
+            <a key={link} href="#" className="floating-orb">
+              <div className="orb-ping"></div>
+              <span style={{ fontSize: '0.6rem', letterSpacing: '2px', fontWeight: 900 }}>{link.toUpperCase()}</span>
+            </a>
+          ))}
         </div>
         <div className="glass-skeuo feedback-loop" style={{ marginTop: '100px', padding: '80px', borderRadius: '40px' }}>
           <h3>VAL_FEEDBACK_LOOP</h3>
@@ -272,36 +302,85 @@ const App = () => {
   );
 };
 
-const CreatorCard = ({ name, role, image, skills }) => (
-  <motion.div 
-    className="creator-card glass-skeuo" 
-    style={{ height: '600px', perspective: '1000px' }}
-    whileHover={{ scale: 1.02, translateZ: 100 }}
-    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-  >
-    <div className="frosted-container" style={{ height: '60%' }}>
-      <img src={image} alt={name} className="frosted-img" />
-    </div>
-    <div className="card-overlay" style={{ background: 'linear-gradient(to top, var(--bg-dark), transparent)', padding: '40px' }}>
-      <h3 style={{ fontSize: '2rem', color: 'var(--accent-cyan)', marginBottom: '10px' }}>{name}</h3>
-      <p style={{ opacity: 0.5, letterSpacing: '4px', fontSize: '0.7rem', textTransform: 'uppercase' }}>{role}</p>
-      
-      <div className="tag-cloud" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '30px' }}>
-        {skills.map(s => (
-          <motion.span 
-            key={s.name} 
-            className="tag glass-skeuo"
-            whileHover={{ y: -5, color: 'var(--accent-cyan)', borderColor: 'var(--accent-cyan)' }}
-            style={{ padding: '8px 15px', fontSize: '0.6rem', letterSpacing: '1px' }}
-          >
+const CreatorCard = ({ name, role, image, skills }) => {
+  const [hovered, setHovered] = useState(false);
+  
+  return (
+    <motion.div 
+      className="creator-card glass-skeuo" 
+      style={{ height: '600px', perspective: '1000px', background: 'transparent' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <AnimatePresence>
+        {hovered && (
+          <motion.div 
+            initial={{ y: -600 }}
+            animate={{ y: 600 }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: 'var(--accent-cyan)', zIndex: 5, boxShadow: '0 0 20px var(--accent-cyan)' }}
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.div 
+        animate={{ opacity: hovered ? 1 : 0.05 }}
+        style={{ height: '100%', width: '100%' }}
+      >
+        <div className="frosted-container" style={{ height: '60%' }}>
+          <img src={image} alt={name} className="frosted-img" style={{ filter: hovered ? 'none' : 'grayscale(1) blur(20px)' }} />
+        </div>
+        <div className="card-overlay" style={{ background: 'linear-gradient(to top, var(--bg-dark), transparent)', padding: '40px' }}>
+          <h3 className="hero-title" style={{ fontSize: '2rem', marginBottom: '10px' }}>{name}</h3>
+          <p style={{ opacity: 0.5, letterSpacing: '4px', fontSize: '0.7rem', textTransform: 'uppercase' }}>{role}</p>
+        </div>
+      </motion.div>
+
+      {/* 3D Orbiting Satellite Tags */}
+      {hovered && skills.map((s, i) => (
+        <motion.div
+          key={s.name}
+          animate={{
+            rotate: 360,
+            x: [Math.cos(i) * 150, Math.cos(i + 2) * 150, Math.cos(i) * 150],
+            y: [Math.sin(i) * 150, Math.sin(i + 2) * 150, Math.sin(i) * 150],
+          }}
+          transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+          style={{ position: 'absolute', top: '40%', left: '45%', pointerEvents: 'none' }}
+        >
+          <span className="tag glass-skeuo" style={{ padding: '8px 15px', color: 'var(--accent-cyan)', borderColor: 'var(--accent-cyan)', whiteSpace: 'nowrap' }}>
             {s.name}
-          </motion.span>
-        ))}
+          </span>
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+};
+
+const RingClock = ({ time }) => {
+  const hours = time.getHours();
+  const minutes = time.getMinutes();
+  const progress = ((hours * 60 + minutes) / 1440) * 100;
+  
+  return (
+    <div style={{ position: 'relative', width: '80px', height: '80px' }}>
+      <svg width="80" height="80" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="2" />
+        <motion.circle 
+          cx="50" cy="50" r="45" fill="none" 
+          stroke="var(--accent-cyan)" 
+          strokeWidth="2" 
+          strokeDasharray="283"
+          initial={{ strokeDashoffset: 283 }}
+          animate={{ strokeDashoffset: 283 - (283 * progress) / 100 }}
+          style={{ filter: `drop-shadow(0 0 10px var(--accent-cyan))` }}
+        />
+      </svg>
+      <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.6rem', opacity: 0.5 }}>
+        {hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}
       </div>
     </div>
-    {/* Shatter Border Animation Placeholder */}
-    <div className="shatter-border" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: '1px solid var(--accent-cyan)', opacity: 0.2, pointerEvents: 'none' }}></div>
-  </motion.div>
-);
+  );
+};
 
 export default App;
