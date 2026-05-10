@@ -107,7 +107,7 @@ const CreatorCard = ({ name, role, image, skills }) => {
         <div style={{ fontFamily: 'monospace', marginTop: '10px' }}>
           {hovered && skills.map((s, i) => (
             <motion.div key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }}>
-              > {s.name}
+              {'>'} {s.name}
             </motion.div>
           ))}
         </div>
