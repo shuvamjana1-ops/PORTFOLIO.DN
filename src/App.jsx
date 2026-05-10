@@ -24,106 +24,121 @@ const useAutoLibrary = () => {
   }, []);
 };
 
-// --- CINEMATIC COMPONENTS ---
+// --- DIGITAL EXPERIENCE COMPONENTS ---
 
-const MolecularPreloader = ({ onComplete }) => {
+const VitalityPreloader = ({ onComplete }) => {
   const canvasRef = useRef();
   useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    let particles = [];
-    let phase = 'converge';
-
-    const init = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      for(let i=0; i<1500; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          tx: canvas.width/2 + (Math.random()-0.5)*300,
-          ty: canvas.height/2 + (Math.random()-0.5)*100,
-          vx: (Math.random()-0.5)*10,
-          vy: (Math.random()-0.5)*10,
-          size: Math.random() * 2
-        });
-      }
-    };
-
+    const ctx = canvasRef.current.getContext('2d');
+    let fill = 0;
     const animate = () => {
-      ctx.fillStyle = 'rgba(5, 5, 5, 0.2)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        if(phase === 'converge') {
-          p.x += (p.tx - p.x) * 0.05;
-          p.y += (p.ty - p.y) * 0.05;
-        } else {
-          p.x += p.vx;
-          p.y += p.vy;
-        }
-        ctx.fillStyle = '#D4AF37';
-        ctx.fillRect(p.x, p.y, p.size, p.size);
-      });
+      ctx.clearRect(0, 0, 1000, 1000);
+      ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+      ctx.lineWidth = 1;
+      ctx.font = 'bold 150px Playfair Display';
+      ctx.strokeText("D'NINJA", 200, 500);
+      
+      ctx.fillStyle = '#E0E0E0';
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 500 - fill, 1000, fill);
+      ctx.clip();
+      ctx.fillText("D'NINJA", 200, 500);
+      ctx.restore();
+
+      if(fill < 300) fill += 2;
+      else setTimeout(onComplete, 1000);
       requestAnimationFrame(animate);
     };
-
-    init();
     animate();
-    setTimeout(() => phase = 'explode', 3000);
-    setTimeout(onComplete, 4000);
   }, []);
 
-  return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#050505' }} />;
+  return <canvas ref={canvasRef} width="1000" height="1000" style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#050505', width: '100%', height: '100%' }} />;
 };
 
-const InkBackground = ({ scrollVelocity }) => {
+const NeuralVoid = () => {
   const meshRef = useRef();
   useFrame((state) => {
     meshRef.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
-    meshRef.current.material.uniforms.uScroll.value = scrollVelocity;
+    meshRef.current.material.uniforms.uMouse.value.set(state.mouse.x, state.mouse.y);
   });
 
   const shaderArgs = useMemo(() => ({
-    uniforms: { uTime: { value: 0 }, uScroll: { value: 0 } },
+    uniforms: { uTime: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
     vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: `
       uniform float uTime;
-      uniform float uScroll;
+      uniform vec2 uMouse;
       varying vec2 vUv;
       void main() {
         vec2 p = vUv * 2.0 - 1.0;
-        float d = length(p);
-        float ink = sin(d * 8.0 - uTime + uScroll * 0.1) * 0.5 + 0.5;
-        gl_FragColor = vec4(vec3(0.01) * ink, 1.0);
+        float d = length(p - uMouse);
+        float grid = step(0.98, fract(vUv.x * 20.0)) + step(0.98, fract(vUv.y * 20.0));
+        float mask = smoothstep(0.4, 0.0, d);
+        gl_FragColor = vec4(vec3(0.1, 0.1, 0.1) * grid * mask, 1.0);
       }
     `
   }), []);
 
+  return <mesh ref={meshRef} scale={[50, 50, 1]}><planeGeometry /><shaderMaterial args={[shaderArgs]} transparent /></mesh>;
+};
+
+const MicroOrbCursor = () => {
+  const dotRef = useRef();
+  const ringRef = useRef();
+  useEffect(() => {
+    const move = (e) => {
+      gsap.to(dotRef.current, { x: e.clientX, y: e.clientY, duration: 0.1 });
+      gsap.to(ringRef.current, { x: e.clientX, y: e.clientY, duration: 0.4, ease: "power2.out" });
+    };
+    window.addEventListener('mousemove', move);
+    return () => window.removeEventListener('mousemove', move);
+  }, []);
   return (
-    <mesh ref={meshRef} scale={[50, 50, 1]}>
-      <planeGeometry />
-      <shaderMaterial args={[shaderArgs]} />
-    </mesh>
+    <>
+      <div ref={dotRef} className="cursor-dot" />
+      <div ref={ringRef} className="cursor-ring" style={{ transform: 'translate(-50%, -50%)' }} />
+    </>
   );
 };
 
-const CinematicCard = ({ name, role, image, skills }) => {
+const BioDock = ({ name, role, image, skills }) => {
+  const [hovered, setHovered] = useState(false);
   return (
     <motion.div 
-      className="smoked-glass z-card"
-      style={{ height: '400px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', position: 'relative', overflow: 'hidden' }}
+      className="bio-dock" 
+      onMouseEnter={() => setHovered(true)} 
+      onMouseLeave={() => setHovered(false)}
+      style={{ padding: '40px', width: '450px', display: 'flex', gap: '30px', position: 'relative' }}
     >
-      <motion.img 
-        src={image} 
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -1, opacity: 0.3, filter: 'grayscale(1)' }}
-        whileHover={{ opacity: 0.8, filter: 'grayscale(0)' }}
-      />
-      <h3 className="refract-text" style={{ fontSize: '1.5rem' }}>{name}</h3>
-      <p className="mono-detail" style={{ color: '#D4AF37' }}>{role}</p>
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-        {skills.map((s, i) => <span key={i} style={{ fontSize: '0.6rem', border: '1px solid rgba(255,255,255,0.1)', padding: '5px 10px' }}>{s.name}</span>)}
+      <img src={image} style={{ width: '120px', height: '180px', objectFit: 'cover', filter: hovered ? 'none' : 'grayscale(1)' }} />
+      <div>
+        <h3 className="luxury-header" style={{ fontSize: '1.5rem' }}>{name}</h3>
+        <p className="mono-detail" style={{ color: '#FFB347' }}>{role}</p>
+        <AnimatePresence>
+          {hovered && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden', marginTop: '20px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                {skills.map((s, i) => <span key={i} className="mono-detail" style={{ fontSize: '0.6rem', border: '1px solid #333', padding: '4px 8px' }}>{s.name}</span>)}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
+  );
+};
+
+const RingClock = () => {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); }, []);
+  return (
+    <div style={{ position: 'relative', width: '60px', height: '60px' }}>
+      <motion.div animate={{ rotate: 360 }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} style={{ position: 'absolute', inset: 0, border: '1px dashed #FFB347', borderRadius: '50%' }} />
+      <div className="mono-detail" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '0.5rem', color: '#FFB347' }}>
+        {time.getSeconds()}S
+      </div>
+    </div>
   );
 };
 
@@ -133,65 +148,54 @@ const App = () => {
   const [loading, setLoading] = useState(true);
   const library = useAutoLibrary();
   const { scrollY } = useScroll();
-  const scrollVel = useVelocity(scrollY);
-  const smoothVel = useSpring(scrollVel, { stiffness: 100, damping: 30 });
-  const cursorRef = useRef(null);
-
-  useEffect(() => {
-    const onMove = (e) => { if (cursorRef.current) gsap.to(cursorRef.current, { x: e.clientX, y: e.clientY, duration: 0.8, ease: "power3.out" }); };
-    const onScrollUpdate = () => {
-      document.documentElement.style.setProperty('--scroll-vel', Math.min(Math.abs(scrollVel.get()) / 10, 10));
-    };
-    window.addEventListener('mousemove', onMove);
-    const scrollUnsub = scrollY.on("change", onScrollUpdate);
-    return () => {
-      window.removeEventListener('mousemove', onMove);
-      scrollUnsub();
-    };
-  }, []);
 
   return (
     <div style={{ background: '#050505', color: '#E0E0E0', minHeight: '100vh' }}>
-      <AnimatePresence>{loading && <MolecularPreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
-      <div ref={cursorRef} className="prismatic-cursor" />
+      <MicroOrbCursor />
+      <AnimatePresence>{loading && <VitalityPreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
       
-      <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
-        <Canvas><InkBackground scrollVelocity={smoothVel.get()} /></Canvas>
-      </div>
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}><Canvas><NeuralVoid /></Canvas></div>
 
-      <nav className="navbar">
+      <nav className="smoked-glass" style={{ position: 'fixed', top: 40, left: '10%', right: '10%', padding: '20px 40px', display: 'flex', justifyContent: 'space-between', zIndex: 1000, borderRadius: '2px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <img src={LogoImg} style={{ height: '30px', filter: 'invert(1)' }} alt="Logo" />
-          <span className="refract-text" style={{ fontSize: '1.2rem' }}>D'NINJA</span>
+          <img src={LogoImg} style={{ height: '20px', filter: 'invert(1)' }} alt="Logo" />
+          <span className="luxury-header" style={{ fontSize: '1rem' }}>D'NINJA</span>
         </div>
-        <div style={{ display: 'flex', gap: '50px' }}>
+        <div style={{ display: 'flex', gap: '60px' }}>
           {['HOME', 'ABOUT', 'WORK', 'CONTACT'].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`} className="nav-link">{l}</a>
+            <motion.a key={l} href={`#${l.toLowerCase()}`} whileHover={{ z: 5, color: '#FFB347' }} className="mono-detail" style={{ textDecoration: 'none', color: '#E0E0E0' }}>{l}</motion.a>
           ))}
         </div>
       </nav>
 
+      <div style={{ position: 'fixed', top: 40, right: '5%', zIndex: 1001, display: 'flex', gap: '20px', alignItems: 'center' }}>
+        <div className="mono-detail" style={{ fontSize: '0.5rem', textAlign: 'right' }}>
+          SECTOR: WEST BENGAL<br />CONNECTION: SECURE
+        </div>
+        <RingClock />
+      </div>
+
       <section id="home" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 10%' }}>
-        <div style={{ fontSize: '0.7rem', letterSpacing: '5px', opacity: 0.5, marginBottom: '20px' }}>SOLDIER IDENTIFIED. GHOST-MODE: ACTIVE. SECTOR: WEST BENGAL.</div>
-        <h1 className="refract-text" style={{ fontSize: '15vw', margin: 0, lineHeight: 0.8 }}>D'NINJA</h1>
+        <h1 className="luxury-header" style={{ fontSize: '15vw', margin: 0, lineHeight: 0.8 }}>D'NINJA</h1>
       </section>
 
       <section id="about" style={{ padding: '100px 10%' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px' }}>
-          <CinematicCard name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'Motion'}]} />
-          <CinematicCard name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'Code'}, {name: 'Physics'}]} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+          <BioDock name="Sumit Dinda" role="Creative Lead" image={SumitImg} skills={[{name: 'UX'}, {name: 'VisDev'}, {name: 'Motion'}]} />
+          <BioDock name="Shuvam Jana" role="Tech Architect" image={ShuvamImg} skills={[{name: 'GLSL'}, {name: 'React'}, {name: 'Hardware'}]} />
         </div>
       </section>
 
       <section id="work" style={{ padding: '100px 10%' }}>
-        <h2 className="refract-text" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_ARCHIVE</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '80px' }}>
+        <h2 className="luxury-header" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_DYNAMIC_VAULT</h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
           {Object.entries(library).map(([category, items]) => (
             <div key={category}>
-              <h3 className="mono-detail" style={{ color: '#D4AF37', marginBottom: '30px' }}>// CATEGORY: {category}</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+              <h3 className="mono-detail" style={{ marginBottom: '30px', color: '#FFB347' }}>// {category}</h3>
+              <div className="masonry-grid">
                 {items.map((item, idx) => (
-                  <motion.div key={idx} className="smoked-glass z-card" whileHover={{ scale: 1.05 }} style={{ aspectRatio: '1', overflow: 'hidden' }}>
+                  <motion.div key={idx} className="masonry-item" style={{ gridRowEnd: `span ${20 + (idx % 3) * 5}` }}>
+                    <div className="glass-reflection" />
                     {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </motion.div>
                 ))}
@@ -201,14 +205,13 @@ const App = () => {
         </div>
       </section>
 
-      <footer style={{ padding: '100px 10%', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        <h2 className="refract-text" style={{ fontSize: '5rem', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
+      <footer id="contact" style={{ padding: '100px 10%', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        <h2 className="luxury-header" style={{ fontSize: '5rem', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '80px' }}>
           {['INSTAGRAM', 'WHATSAPP', 'EMAIL'].map(c => (
-            <a key={c} href="#" className="nav-link" style={{ fontSize: '0.8rem' }}>{c}</a>
+            <motion.a key={c} href="#" whileHover={{ letterSpacing: '8px', color: '#FFB347' }} className="mono-detail" style={{ fontSize: '0.8rem', textDecoration: 'none', color: '#E0E0E0' }}>{c}</motion.a>
           ))}
         </div>
-        <div style={{ marginTop: '100px', opacity: 0.2, fontSize: '0.6rem', letterSpacing: '5px' }}>© 2026 D'NINJA CINEMATIC. ALL SYSTEMS OPERATIONAL.</div>
       </footer>
     </div>
   );
