@@ -1,17 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@100;300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@100;300;400&display=swap');
 
 :root {
-  --bg-heaven: #F5F5F7;
-  --text-obsidian: #1D1D1F;
-  --accent-gold: #D4AF37;
-  --silk-cream: #FFFDF9;
-  --silk-lavender: #F0F0FA;
-  --glass-bg: rgba(255, 255, 255, 0.6);
-  --glass-blur: 20px;
-  --font-serif: 'Playfair Display', serif;
-  --font-sans: 'Inter', sans-serif;
-  --phi: 1.618;
-  --space-unit: calc(100vh / 12);
+  --bg-obsidian: #050505;
+  --bg-carbon: #0A0A0A;
+  --text-mercury: #E0E0E0;
+  --accent-bio-gold: #FFD700;
+  --mercury-silver: #B0B0B0;
+  --glass-blur: 30px;
+  --font-header: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -19,139 +16,123 @@
   padding: 0;
   box-sizing: border-box;
   cursor: none !important;
-  transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 body {
-  background-color: var(--bg-heaven);
-  color: var(--text-obsidian);
-  font-family: var(--font-sans);
+  background-color: var(--bg-obsidian);
+  color: var(--text-mercury);
+  font-family: var(--font-mono);
   overflow-x: hidden;
-  line-height: var(--phi);
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Film Grain Overlay */
+/* Digital Noise Texture */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Cinematic Vignette */
 body::after {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  opacity: 0.05;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 30%, rgba(0,0,0,0.8) 100%);
   pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: multiply;
+  z-index: 9998;
 }
 
-/* Silk Nebula Background */
-.silk-nebula {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle at 50% 50%, var(--silk-cream), var(--silk-lavender), var(--bg-heaven));
-  z-index: -1;
-  filter: blur(60px);
+/* Typography Styles */
+.dark-matter-title {
+  font-family: var(--font-header);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--text-mercury);
 }
 
-/* Gaussian Bloom & Soft Shadow */
-.floating-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  border-radius: 2px;
-  transition: all 1.5s cubic-bezier(0.19, 1, 0.22, 1);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.02);
-}
-
-.floating-card:hover {
-  filter: blur(1px) brightness(1.05);
-  box-shadow: 0 40px 100px rgba(255,255,255,0.8);
-  transform: translateY(-10px);
-}
-
-/* Heavenly Typography */
-.heavenly-title {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-style: italic;
-  font-size: clamp(3rem, 8vw, 6rem);
-  color: var(--text-obsidian);
-  letter-spacing: -0.03em;
-  line-height: 0.9;
-}
-
-.minimal-sans {
-  font-family: var(--font-sans);
+.mono-detail {
+  font-family: var(--font-mono);
   font-weight: 300;
   text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-size: 0.7rem;
-  color: var(--text-obsidian);
-  opacity: 0.6;
+  letter-spacing: 0.3em;
+  font-size: 0.65rem;
+  color: var(--mercury-silver);
 }
 
-/* Aura Cursor Refined */
-.aura-cursor {
-  position: fixed;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
-  transition: width 0.8s ease, height 0.8s ease;
+/* Smoked Glass Navigation */
+.smoked-glass {
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Parallax Skills */
-.parallax-skill {
-  position: absolute;
-  font-family: var(--font-serif);
-  font-style: italic;
-  opacity: 0.1;
-  pointer-events: none;
-  z-index: -1;
-  white-space: nowrap;
+.active-glow {
+  text-shadow: 0 0 15px var(--accent-bio-gold);
+  color: #fff !important;
 }
 
-/* Sundial Clock */
-.sundial-wrapper {
+/* Museum of Shadows - Neon Trace */
+.neon-trace-card {
   position: relative;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 0.5px solid rgba(0,0,0,0.05);
+  background: var(--bg-carbon);
+  transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
 }
 
-.sundial-gnomon {
+.neon-trace-card::after {
+  content: '';
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1px;
-  height: 40px;
-  background: var(--accent-gold);
-  transform-origin: bottom;
-  box-shadow: 10px 10px 20px rgba(0,0,0,0.1);
+  inset: 0;
+  border: 1px solid transparent;
+  transition: border-color 0.6s;
 }
 
-/* Zen Toggle */
-.zen-toggle {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-  font-family: var(--font-sans);
-  font-size: 0.6rem;
-  letter-spacing: 2px;
-  cursor: pointer;
-  z-index: 1000;
-  opacity: 0.5;
-  transition: opacity 0.3s;
+.neon-trace-card:hover::after {
+  border-color: var(--accent-bio-gold);
+  box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.1);
 }
 
-.zen-toggle:hover {
-  opacity: 1;
+/* Flicker Animation */
+@keyframes neon-flicker {
+  0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% { opacity: 1; }
+  20%, 21.999%, 63%, 63.999%, 65%, 69.999% { opacity: 0.4; }
+}
+
+.flicker {
+  animation: neon-flicker 2s infinite;
+}
+
+/* EKG Pulse footer line */
+.ekg-line {
+  width: 100%;
+  height: 2px;
+  background: var(--bg-carbon);
+  position: relative;
+  overflow: hidden;
+}
+
+.ekg-pulse {
+  position: absolute;
+  width: 50px;
+  height: 100%;
+  background: var(--accent-bio-gold);
+  filter: blur(4px);
+  box-shadow: 0 0 15px var(--accent-bio-gold);
+  animation: pulse-move 2s infinite linear;
+}
+
+@keyframes pulse-move {
+  0% { left: -10%; opacity: 0; }
+  50% { opacity: 1; }
+  100% { left: 110%; opacity: 0; }
 }
