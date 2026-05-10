@@ -84,30 +84,44 @@ const InkNebula = ({ velocity }) => {
 };
 
 const NoirPortrait = ({ name, role, image, skills }) => {
-  const cardRef = useRef(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState(false);
 
   return (
     <motion.div 
-      ref={cardRef}
-      onMouseMove={(e) => {
-        const rect = cardRef.current.getBoundingClientRect();
-        setMouse({ x: (e.clientX - (rect.left + rect.width / 2)) / 20, y: (e.clientY - (rect.top + rect.height / 2)) / 20 });
-      }}
-      onMouseLeave={() => setMouse({ x: 0, y: 0 })}
       className="neon-trace-card"
-      style={{ height: '600px', perspective: '1000px' }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{ height: '350px', background: 'rgba(10,10,10,0.8)', padding: '30px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', border: '1px solid rgba(255,255,255,0.03)' }}
     >
-      <motion.div animate={{ rotateX: -mouse.y, rotateY: mouse.x, z: 50 }} style={{ width: '100%', height: '100%', position: 'relative' }}>
-        <img src={image} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1) contrast(1.5)' }} />
-        <div style={{ position: 'absolute', bottom: 0, padding: '40px', background: 'linear-gradient(transparent, #050505)', width: '100%' }}>
-          <h3 className="dark-matter-title" style={{ fontSize: '1.5rem' }}>{name}</h3>
-          <p className="mono-detail">{role}</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '20px' }}>
-            {skills.map((s, i) => <span key={i} className="flicker mono-detail" style={{ border: '1px solid #333', padding: '5px 10px' }}>{s.name}</span>)}
-          </div>
-        </div>
-      </motion.div>
+      <div style={{ position: 'relative', width: '120px', height: '120px', marginBottom: '25px' }}>
+        <motion.div 
+          animate={{ scale: hovered ? 1.1 : 1, borderColor: hovered ? '#FFD700' : 'rgba(255,255,255,0.1)' }}
+          style={{ width: '100%', height: '100%', borderRadius: '50%', border: '2px solid', overflow: 'hidden', padding: '5px' }}
+        >
+          <img src={image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', filter: hovered ? 'grayscale(0)' : 'grayscale(1)' }} />
+        </motion.div>
+        {hovered && <motion.div layoutId="scan" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: '#FFD700', boxShadow: '0 0 10px #FFD700' }} animate={{ top: ['0%', '100%', '0%'] }} transition={{ duration: 2, repeat: Infinity }} />}
+      </div>
+      
+      <h3 className="dark-matter-title" style={{ fontSize: '1rem', letterSpacing: '5px' }}>{name}</h3>
+      <p className="mono-detail" style={{ fontSize: '0.6rem', color: '#FFD700', marginTop: '5px' }}>{role}</p>
+      
+      <AnimatePresence>
+        {hovered && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            style={{ marginTop: '20px', display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}
+          >
+            {skills.map((s, i) => (
+              <span key={i} className="mono-detail" style={{ fontSize: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '4px 8px' }}>
+                {s.name}
+              </span>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -155,9 +169,13 @@ const App = () => {
       </section>
 
       <section id="ops" style={{ padding: '100px 10%' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px' }}>
-          <NoirPortrait name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'VisDev'}]} />
-          <NoirPortrait name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'GLSL'}, {name: 'Architecture'}]} />
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+          <div style={{ width: '300px' }}>
+            <NoirPortrait name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'VisDev'}]} />
+          </div>
+          <div style={{ width: '300px' }}>
+            <NoirPortrait name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'GLSL'}, {name: 'Architecture'}]} />
+          </div>
         </div>
       </section>
 
