@@ -244,7 +244,7 @@ const App = () => {
         <h2 style={{ fontSize: '3rem', marginBottom: '60px', textAlign: 'center', fontWeight: 100 }}>CINEMATIC_VAULT</h2>
         
         {/* Cinematic Background Immersion */}
-        <div id="vault-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', z-index: -2, opacity: 0, transition: 'opacity 1s ease', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(50px) brightness(0.3)' }}></div>
+        <div id="vault-bg" style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: -2, opacity: 0, transition: 'opacity 1s ease', backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(50px) brightness(0.3)' }}></div>
 
         {Object.entries(catalog).map(([cat, items]) => (
           <div key={cat} style={{ marginBottom: '100px', position: 'relative' }}>
