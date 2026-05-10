@@ -2,6 +2,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import gsap from 'gsap';
 
+// Local Assets
+import LogoImg from './assets/logo.png';
+import SumitImg from './assets/sumit.jpg';
+import ShuvamImg from './assets/shuvam.jpg';
+
 // --- HEAVENLY COMPONENTS ---
 
 const DivinePreloader = ({ onComplete }) => {
@@ -133,7 +138,10 @@ const App = () => {
       </div>
 
       <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '60px 10%', display: 'flex', justifyContent: 'space-between', zIndex: 100 }}>
-        <div style={{ fontFamily: 'Playfair Display', fontSize: '1.5rem', fontStyle: 'italic' }}>D'NINJA</div>
+        <div style={{ fontFamily: 'Playfair Display', fontSize: '1.5rem', fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img src={LogoImg} alt="D'NINJA" style={{ height: '30px', filter: 'brightness(0)' }} />
+          D'NINJA
+        </div>
         <div style={{ display: 'flex', gap: '60px' }}>
           {['SANCTUARY', 'CREATORS', 'ARCHIVE', 'CONTACT'].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`} className="minimal-sans" style={{ textDecoration: 'none' }}>{l}</a>
@@ -160,8 +168,8 @@ const App = () => {
 
       <section id="creators" style={{ padding: '100px 10%' }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '100px' }}>
-          <CreatorCard name="Sumit Dinda" role="Creative Director" image="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800" skills={[{name: 'Vision'}, {name: 'Light'}]} />
-          <CreatorCard name="Shuvam Jana" role="Lead Architect" image="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800" skills={[{name: 'Silk'}, {name: 'Form'}]} />
+          <CreatorCard name="Sumit Dinda" role="Creative Director" image={SumitImg} skills={[{name: 'Vision'}, {name: 'Light'}]} />
+          <CreatorCard name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'Silk'}, {name: 'Form'}]} />
         </div>
       </section>
 
