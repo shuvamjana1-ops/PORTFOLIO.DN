@@ -98,7 +98,7 @@ const NoirPortrait = ({ name, role, image, skills }) => {
           animate={{ scale: hovered ? 1.1 : 1, borderColor: hovered ? '#FFD700' : 'rgba(255,255,255,0.1)' }}
           style={{ width: '100%', height: '100%', borderRadius: '50%', border: '2px solid', overflow: 'hidden', padding: '5px' }}
         >
-          <img src={image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', filter: hovered ? 'grayscale(0)' : 'grayscale(1)' }} />
+          <img src={image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
         </motion.div>
         {hovered && <motion.div layoutId="scan" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '2px', background: '#FFD700', boxShadow: '0 0 10px #FFD700' }} animate={{ top: ['0%', '100%', '0%'] }} transition={{ duration: 2, repeat: Infinity }} />}
       </div>
@@ -155,20 +155,20 @@ const App = () => {
           <h2 className="dark-matter-title" style={{ fontSize: '1rem', margin: 0 }}>D'NINJA</h2>
         </div>
         <div style={{ display: 'flex', gap: '40px' }}>
-          {['GHOST', 'OPS', 'VAULT', 'INTEL'].map(l => (
+          {['HOME', 'ABOUT', 'WORK', 'CONTACT'].map(l => (
             <a key={l} href={`#${l.toLowerCase()}`} className="mono-detail active-glow" style={{ textDecoration: 'none' }}>{l}</a>
           ))}
         </div>
       </nav>
 
-      <section id="ghost" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 10%' }}>
+      <section id="home" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 10%' }}>
         <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 1 }}>
           <div className="mono-detail">SOLDIER AUTHENTICATED. GHOST-MODE: ACTIVE. NIGHT-OPS SYNCHRONIZED.</div>
           <h1 className="dark-matter-title" style={{ fontSize: '12vw', margin: 0 }}>D'NINJA</h1>
         </motion.div>
       </section>
 
-      <section id="ops" style={{ padding: '100px 10%' }}>
+      <section id="about" style={{ padding: '100px 10%' }}>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
           <div style={{ width: '300px' }}>
             <NoirPortrait name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'VisDev'}]} />
@@ -179,7 +179,7 @@ const App = () => {
         </div>
       </section>
 
-      <section id="vault" style={{ padding: '100px 10%' }}>
+      <section id="work" style={{ padding: '100px 10%' }}>
         <h2 className="dark-matter-title" style={{ fontSize: '3rem', marginBottom: '80px' }}>THE_SHADOW_VAULT</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '100px' }}>
           {Object.entries(library).map(([category, items]) => (
@@ -188,11 +188,20 @@ const App = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
                 {items.map((item, idx) => (
                   <motion.div key={idx} className="neon-trace-card" whileHover={{ scale: 1.02 }} style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
-                    {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)', transition: '0.5s' }} onMouseEnter={e => e.target.style.filter = 'grayscale(0)'} onMouseLeave={e => e.target.style.filter = 'grayscale(1)'} />}
+                    {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </motion.div>
                 ))}
               </div>
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="contact" style={{ padding: '100px 10%', textAlign: 'center' }}>
+        <h2 className="dark-matter-title" style={{ fontSize: '4rem', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '60px' }}>
+          {['INSTAGRAM', 'WHATSAPP', 'EMAIL'].map(c => (
+            <motion.a key={c} href="#" className="mono-detail active-glow" whileHover={{ letterSpacing: '8px' }}>{c}</motion.a>
           ))}
         </div>
       </section>
