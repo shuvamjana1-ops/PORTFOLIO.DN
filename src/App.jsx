@@ -6,8 +6,8 @@ import gsap from 'gsap';
 
 // Local Assets
 import LogoImg from './assets/logo.png';
-import SumitImg from './assets/sumit.jpg';
-import ShuvamImg from './assets/shuvam.jpg';
+const SumitImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800";
+const ShuvamImg = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800";
 
 // --- DARK MATTER COMPONENTS ---
 
