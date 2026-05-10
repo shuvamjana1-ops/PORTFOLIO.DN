@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;300;400;500;700;900&display=swap');
 
+:root {
   --bg-dark: #050505;
   --bg-grid: #111111;
   --glass-bg: rgba(0, 0, 0, 0.6);
