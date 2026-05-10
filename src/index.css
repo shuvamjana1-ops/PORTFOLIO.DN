@@ -1,12 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@100;300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@800&family=JetBrains+Mono:wght@100;300;400&display=swap');
 
 :root {
-  --bg-blackest: #030303;
-  --text-mercury: #E0E0E0;
-  --accent-tactical: #D4AF37;
-  --glass-blur: 30px;
-  --font-swiss: 'Inter', sans-serif;
-  --font-tech: 'JetBrains Mono', monospace;
+  --bg-obsidian: #050505;
+  --accent-mercury: #00FFCC;
+  --text-primary: #E0E0E0;
+  --elite-bezier: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-header: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * {
@@ -17,97 +17,83 @@
 }
 
 body {
-  background-color: var(--bg-blackest);
-  color: var(--text-mercury);
-  font-family: var(--font-swiss);
+  background-color: #000;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Breathe Cycle Animation */
-@keyframes site-breathe {
-  0%, 100% { opacity: 0.95; }
-  50% { opacity: 1; }
+/* Kinetic Typography - Chromatic Fringe */
+@keyframes chromatic-vibration {
+  0% { transform: translate(0,0); text-shadow: 2px 0 red, -2px 0 blue; }
+  25% { transform: translate(1px, -1px); text-shadow: -2px 0 red, 2px 0 blue; }
+  50% { transform: translate(-1px, 1px); text-shadow: 2px 0 red, -2px 0 blue; }
+  75% { transform: translate(1px, 1px); text-shadow: -2px 0 red, 2px 0 blue; }
+  100% { transform: translate(0,0); text-shadow: 2px 0 red, -2px 0 blue; }
 }
 
-body {
-  animation: site-breathe 4s ease-in-out infinite;
+.chromatic-fringe:hover {
+  animation: chromatic-vibration 0.1s infinite;
+  color: #fff;
 }
 
-/* Swiss-Tech Typography */
-.etched-text {
-  font-family: var(--font-swiss);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  -webkit-text-stroke: 0.5px rgba(224, 224, 224, 0.3);
-  color: transparent;
-  background: linear-gradient(to right, #E0E0E0, #888);
-  -webkit-background-clip: text;
-  background-clip: text;
+/* Elite Transition Bezier */
+.elite-move {
+  transition: all 0.6s var(--elite-bezier);
 }
 
-/* Unmasking Animation */
-@keyframes text-unmask {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0 0 0); }
-}
-
-.unmask {
-  animation: text-unmask 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
-}
-
-/* Precision Cursor */
-.precision-dot {
+/* Focal Lens Cursor & Trail */
+.focal-dot {
   position: fixed;
-  width: 8px;
-  height: 8px;
-  background: #fff;
+  width: 6px;
+  height: 6px;
+  background: var(--accent-mercury);
   border-radius: 50%;
   pointer-events: none;
   z-index: 10001;
-  mix-blend-mode: difference;
+  box-shadow: 0 0 10px var(--accent-mercury);
 }
 
-.ghost-ring {
+.cursor-trail {
   position: fixed;
-  width: 30px;
-  height: 30px;
-  border: 0.5px solid rgba(255, 255, 255, 0.2);
+  width: 6px;
+  height: 6px;
+  background: rgba(0, 255, 204, 0.3);
   border-radius: 50%;
   pointer-events: none;
   z-index: 10000;
-  transform: translate(-50%, -50%);
+  filter: blur(2px);
 }
 
-/* Focus Brackets [ ] */
-.focus-bracket {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  border: 1px solid var(--accent-tactical);
-  opacity: 0;
-  transition: opacity 0.3s, transform 0.3s;
-}
-
-/* Holographic Bio Slabs */
-.hologram-slab {
-  background: rgba(15, 15, 15, 0.4);
-  backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Bento-Grid Reveal */
-.bento-grid {
+/* HUD System Status */
+.hud-status {
   position: fixed;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 100px 100px;
-  pointer-events: none;
-  z-index: -1;
-  mask-image: radial-gradient(circle at var(--mouse-x) var(--mouse-y), black 100px, transparent 250px);
+  top: 40px;
+  right: 40px;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
+  letter-spacing: 2px;
+  color: var(--accent-mercury);
+  text-align: right;
+  z-index: 1000;
+  opacity: 0.6;
+}
+
+/* Glass-Break Section Reveal */
+.glass-section {
+  opacity: 0;
+  transform: translateY(50px) scale(0.95);
+  transition: all 1.2s var(--elite-bezier);
+}
+
+.glass-section.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* Carousel Skew Effect */
+.carousel-item {
+  transform: skewY(calc(var(--scroll-velocity) * 0.1deg));
+  transition: transform 0.2s linear;
 }

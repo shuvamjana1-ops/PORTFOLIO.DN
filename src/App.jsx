@@ -9,7 +9,7 @@ import LogoImg from './assets/identity/logo.png';
 const SumitImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800";
 const ShuvamImg = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800";
 
-// --- THE ARCHIVE-X ENGINE ---
+// --- THE KINETIC ENGINE ---
 const useAutoLibrary = () => {
   return useMemo(() => {
     const library = {};
@@ -24,61 +24,63 @@ const useAutoLibrary = () => {
   }, []);
 };
 
-// --- HYPER-REALISTIC COMPONENTS ---
+// --- KINETIC COMPONENTS ---
 
-const VitalityStreamPreloader = ({ onComplete }) => {
-  const canvasRef = useRef();
+const VolumetricPreloader = ({ onComplete }) => {
+  const meshRef = useRef();
+  const [fill, setFill] = useState(0);
+
   useEffect(() => {
-    const ctx = canvasRef.current.getContext('2d');
-    let fill = 0;
-    const animate = () => {
-      ctx.clearRect(0, 0, 1000, 1000);
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 2;
-      ctx.font = '900 120px Inter';
-      ctx.strokeText("D'NINJA", 200, 500);
-      
-      // Volumetric Slosh Effect
-      const wave = Math.sin(Date.now() * 0.005) * 10;
-      ctx.fillStyle = '#E0E0E0';
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 500 - fill + wave, 1000, fill);
-      ctx.clip();
-      ctx.fillText("D'NINJA", 200, 500);
-      ctx.restore();
-
-      if(fill < 250) fill += 1.5;
-      else {
-        gsap.to(canvasRef.current, { opacity: 0, scale: 2, duration: 1, ease: "power4.inOut", onComplete });
-      }
-      requestAnimationFrame(animate);
-    };
-    animate();
+    const timer = setInterval(() => {
+      setFill(prev => {
+        if(prev >= 1) { clearInterval(timer); setTimeout(onComplete, 1000); return 1; }
+        return prev + 0.01;
+      });
+    }, 30);
+    return () => clearInterval(timer);
   }, []);
 
-  return <canvas ref={canvasRef} width="1000" height="1000" style={{ position: 'fixed', inset: 0, zIndex: 10000, background: '#030303', width: '100%', height: '100%' }} />;
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 10000, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+      <div style={{ position: 'relative', width: '300px', height: '300px' }}>
+        <Canvas>
+          <mesh ref={meshRef}>
+            <boxGeometry args={[2, 2, 2]} />
+            <meshBasicMaterial color="#00FFCC" wireframe opacity={0.3} transparent />
+          </mesh>
+          <mesh position={[0, -1 + fill, 0]} scale={[2, fill * 2, 2]}>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshBasicMaterial color="#00FFCC" />
+          </mesh>
+          <ambientLight intensity={0.5} />
+        </Canvas>
+        <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#fff', fontFamily: 'Syne', fontSize: '1.2rem', letterSpacing: '10px' }}>D'NINJA</div>
+      </div>
+    </div>
+  );
 };
 
-const MoltenGlassBackground = ({ velocity }) => {
+const LiquidObsidian = ({ velocity }) => {
   const meshRef = useRef();
   useFrame((state) => {
     meshRef.current.material.uniforms.uTime.value = state.clock.getElapsedTime();
     meshRef.current.material.uniforms.uVelocity.value = velocity;
+    meshRef.current.material.uniforms.uMouse.value.set(state.mouse.x, state.mouse.y);
   });
 
   const shaderArgs = useMemo(() => ({
-    uniforms: { uTime: { value: 0 }, uVelocity: { value: 0 } },
+    uniforms: { uTime: { value: 0 }, uVelocity: { value: 0 }, uMouse: { value: new THREE.Vector2() } },
     vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
     fragmentShader: `
       uniform float uTime;
       uniform float uVelocity;
+      uniform vec2 uMouse;
       varying vec2 vUv;
       void main() {
         vec2 p = vUv * 2.0 - 1.0;
-        float dist = length(p);
-        float wave = sin(dist * 5.0 - uTime + uVelocity * 0.01) * 0.5 + 0.5;
-        gl_FragColor = vec4(vec3(0.01) * wave, 1.0);
+        float d = length(p - uMouse);
+        float swirl = sin(d * 10.0 - uTime + uVelocity * 0.01) * 0.5 + 0.5;
+        gl_FragColor = vec4(vec3(0.02) * swirl, 1.0);
       }
     `
   }), []);
@@ -86,76 +88,47 @@ const MoltenGlassBackground = ({ velocity }) => {
   return <mesh ref={meshRef} scale={[50, 50, 1]}><planeGeometry /><shaderMaterial args={[shaderArgs]} /></mesh>;
 };
 
-const PrecisionCursor = () => {
-  const dotRef = useRef();
-  const ringRef = useRef();
-  const [hovering, setHovering] = useState(false);
+const LetterShuffle = ({ text }) => {
+  const [display, setDisplay] = useState('');
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  
+  useEffect(() => {
+    let iteration = 0;
+    const interval = setInterval(() => {
+      setDisplay(text.split('').map((c, i) => {
+        if(i < iteration) return text[i];
+        return chars[Math.floor(Math.random() * chars.length)];
+      }).join(''));
+      if(iteration >= text.length) clearInterval(interval);
+      iteration += 1/3;
+    }, 30);
+    return () => clearInterval(interval);
+  }, [text]);
 
+  return <span>{display}</span>;
+};
+
+const FocalCursor = () => {
+  const dotRef = useRef();
+  const trailRefs = useRef([]);
   useEffect(() => {
     const move = (e) => {
       gsap.to(dotRef.current, { x: e.clientX, y: e.clientY, duration: 0.1 });
-      gsap.to(ringRef.current, { x: e.clientX, y: e.clientY, duration: 0.4, ease: "power2.out" });
-      document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      trailRefs.current.forEach((ref, i) => {
+        gsap.to(ref, { x: e.clientX, y: e.clientY, duration: 0.2 + i * 0.05, ease: "power2.out" });
+      });
     };
-    const onHover = () => setHovering(true);
-    const onLeave = () => setHovering(false);
-    
     window.addEventListener('mousemove', move);
-    document.querySelectorAll('a, button, .z-card').forEach(el => {
-      el.addEventListener('mouseenter', onHover);
-      el.addEventListener('mouseleave', onLeave);
-    });
-
     return () => window.removeEventListener('mousemove', move);
   }, []);
 
   return (
     <>
-      <div ref={dotRef} className="precision-dot" style={{ background: hovering ? 'transparent' : '#fff' }}>
-        {hovering && <span style={{ color: '#D4AF37', fontSize: '10px' }}>[ ]</span>}
-      </div>
-      <div ref={ringRef} className="ghost-ring" style={{ scale: hovering ? 1.5 : 1, opacity: hovering ? 0 : 1 }} />
+      {[...Array(5)].map((_, i) => (
+        <div key={i} ref={el => trailRefs.current[i] = el} className="cursor-trail" style={{ opacity: 0.5 - i * 0.1 }} />
+      ))}
+      <div ref={dotRef} className="focal-dot" />
     </>
-  );
-};
-
-const HolographicBio = ({ name, role, image, skills }) => {
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  return (
-    <motion.div 
-      className="hologram-slab z-card"
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        setMouse({ x: (e.clientX - (rect.left + rect.width / 2)) / 10, y: (e.clientY - (rect.top + rect.height / 2)) / 10 });
-      }}
-      onMouseLeave={() => setMouse({ x: 0, y: 0 })}
-      style={{ width: '400px', height: '600px', padding: '40px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}
-    >
-      {/* Floating Orbitals Simulation */}
-      <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)' }}>
-        {skills.map((s, i) => (
-          <motion.div 
-            key={i}
-            animate={{ rotate: 360, x: Math.cos(i) * 100, y: Math.sin(i) * 50 }}
-            transition={{ duration: 10 + i, repeat: Infinity, ease: "linear" }}
-            style={{ position: 'absolute', fontSize: '0.5rem', color: '#D4AF37', whiteSpace: 'nowrap' }}
-          >
-            {s.name}
-          </motion.div>
-        ))}
-      </div>
-
-      <motion.img 
-        src={image} 
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -1, opacity: 0.5, x: mouse.x, y: mouse.y }} 
-      />
-      
-      <motion.div style={{ x: mouse.x * 1.5, y: mouse.y * 1.5 }}>
-        <h3 className="etched-text unmask" style={{ fontSize: '1.5rem' }}>{name}</h3>
-        <p className="mono-detail" style={{ color: '#D4AF37', marginTop: '10px' }}>{role}</p>
-      </motion.div>
-    </motion.div>
   );
 };
 
@@ -167,62 +140,88 @@ const App = () => {
   const { scrollY } = useScroll();
   const scrollVel = useVelocity(scrollY);
   const smoothVel = useSpring(scrollVel, { stiffness: 100, damping: 30 });
-  const [time, setTime] = useState(new Date());
+  const [fps, setFps] = useState(60);
 
   useEffect(() => {
-    const t = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(t);
+    let lastTime = performance.now();
+    let frames = 0;
+    const updateFps = (time) => {
+      frames++;
+      if (time > lastTime + 1000) {
+        setFps(Math.round((frames * 1000) / (time - lastTime)));
+        lastTime = time;
+        frames = 0;
+      }
+      requestAnimationFrame(updateFps);
+    };
+    requestAnimationFrame(updateFps);
+    
+    scrollY.on("change", (v) => {
+      document.documentElement.style.setProperty('--scroll-velocity', Math.abs(scrollVel.get()));
+    });
   }, []);
 
   return (
-    <div style={{ background: '#030303', color: '#E0E0E0', minHeight: '100vh' }}>
-      <PrecisionCursor />
-      <AnimatePresence>{loading && <VitalityStreamPreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
+    <div style={{ background: '#000', color: '#E0E0E0', minHeight: '100vh' }}>
+      <FocalCursor />
+      <AnimatePresence>{loading && <VolumetricPreloader onComplete={() => setLoading(false)} />}</AnimatePresence>
       
-      <div className="bento-grid" />
-      <div style={{ position: 'fixed', inset: 0, zIndex: -2 }}><Canvas><MoltenGlassBackground velocity={smoothVel.get()} /></Canvas></div>
+      <div className="hud-status">
+        SECTOR: WEST BENGAL<br />
+        FPS_MONITOR: {fps} FPS<br />
+        SOLDIER_STATUS: AUTHENTICATED
+      </div>
 
-      <nav style={{ position: 'fixed', top: 0, width: '100%', padding: '40px 8%', display: 'flex', justifyContent: 'space-between', zIndex: 1000, mixBlendMode: 'difference' }}>
+      <div style={{ position: 'fixed', inset: 0, zIndex: -1 }}>
+        <Canvas><LiquidObsidian velocity={smoothVel.get()} /></Canvas>
+      </div>
+
+      <nav style={{ position: 'fixed', top: 40, left: '8%', right: '8%', display: 'flex', justifyContent: 'space-between', zIndex: 1000 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <img src={LogoImg} style={{ height: '25px', filter: 'invert(1)' }} alt="Logo" />
-          <span className="etched-text" style={{ fontSize: '1rem' }}>D'NINJA</span>
+          <h2 className="chromatic-fringe" style={{ fontSize: '1rem', fontFamily: 'Syne' }}>D'NINJA</h2>
         </div>
-        <div style={{ display: 'flex', gap: '50px' }}>
+        <div style={{ display: 'flex', gap: '60px' }}>
           {['HOME', 'ABOUT', 'WORK', 'CONTACT'].map(l => (
-            <a key={l} href={`#${l.toLowerCase()}`} className="mono-detail" style={{ textDecoration: 'none', color: '#fff', fontSize: '0.6rem', letterSpacing: '4px' }}>{l}</a>
+            <a key={l} href={`#${l.toLowerCase()}`} className="chromatic-fringe" style={{ textDecoration: 'none', color: '#E0E0E0', fontSize: '0.6rem', letterSpacing: '4px' }}>{l}</a>
           ))}
         </div>
       </nav>
 
-      <div style={{ position: 'fixed', bottom: 40, right: '8%', zIndex: 1000, textAlign: 'right' }}>
-        <div className="mono-detail" style={{ fontSize: '0.5rem', color: '#D4AF37', letterSpacing: '2px' }}>
-          SENTRY ACTIVE. WELCOME, SOLDIER.<br />
-          SECTOR: WEST BENGAL | {time.toLocaleTimeString()}_SYNC
-        </div>
-      </div>
-
       <section id="home" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '0 8%' }}>
-        <h1 className="etched-text unmask" style={{ fontSize: '16vw', lineHeight: 0.8, margin: 0 }}>D'NINJA</h1>
+        <h1 className="chromatic-fringe" style={{ fontSize: '18vw', lineHeight: 0.8, fontFamily: 'Syne', margin: 0 }}>
+          <LetterShuffle text="D'NINJA" />
+        </h1>
       </section>
 
-      <section id="about" style={{ padding: '100px 8%', display: 'flex', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
-        <HolographicBio name="Sumit Dinda" role="Lead Designer" image={SumitImg} skills={[{name: 'UX'}, {name: 'Visuals'}]} />
-        <HolographicBio name="Shuvam Jana" role="Lead Architect" image={ShuvamImg} skills={[{name: 'Code'}, {name: 'Hardware'}]} />
+      <section id="about" style={{ padding: '100px 8%', display: 'flex', justifyContent: 'center', gap: '60px', flexWrap: 'wrap' }}>
+        {[ {name: "Sumit Dinda", role: "Creative Lead", img: SumitImg}, {name: "Shuvam Jana", role: "Tech Architect", img: ShuvamImg} ].map((p, i) => (
+          <motion.div 
+            key={i} 
+            className="elite-move" 
+            whileHover={{ y: -20, boxShadow: '0 40px 100px rgba(0,255,204,0.1)' }}
+            style={{ width: '400px', height: '550px', background: 'rgba(255,255,255,0.02)', padding: '40px', border: '1px solid rgba(255,255,255,0.05)', position: 'relative' }}
+          >
+            <img src={p.img} style={{ width: '100%', height: '70%', objectFit: 'cover', filter: 'grayscale(1)', opacity: 0.5 }} />
+            <h3 className="chromatic-fringe" style={{ fontSize: '1.5rem', marginTop: '30px' }}>{p.name}</h3>
+            <p className="mono-detail" style={{ color: '#00FFCC' }}>{p.role}</p>
+          </motion.div>
+        ))}
       </section>
 
       <section id="work" style={{ padding: '100px 8%' }}>
-        <h2 className="etched-text" style={{ fontSize: '3rem', marginBottom: '80px' }}>ARCHIVE_X</h2>
+        <h2 className="chromatic-fringe" style={{ fontSize: '4rem', marginBottom: '80px', fontFamily: 'Syne' }}>DYNAMIC_VAULT</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '80px' }}>
           {Object.entries(library).map(([category, items]) => (
             <div key={category}>
-              <h3 className="mono-detail" style={{ color: '#D4AF37', marginBottom: '30px' }}>// {category}</h3>
+              <h3 className="mono-detail" style={{ color: '#00FFCC', marginBottom: '30px' }}>// {category}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
                 {items.map((item, idx) => (
                   <motion.div 
                     key={idx} 
-                    className="hologram-slab z-card" 
-                    whileHover={{ scale: 1.1, boxShadow: '0 0 50px rgba(212, 175, 55, 0.2)' }}
-                    style={{ aspectRatio: '1', overflow: 'hidden' }}
+                    className="carousel-item elite-move" 
+                    whileHover={{ scale: 1.1, zIndex: 10 }}
+                    style={{ aspectRatio: '1', overflow: 'hidden', background: '#111' }}
                   >
                     {item.type === 'video' ? <video src={item.url} autoPlay muted loop style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                   </motion.div>
@@ -234,10 +233,10 @@ const App = () => {
       </section>
 
       <footer id="contact" style={{ padding: '200px 8%', textAlign: 'center' }}>
-        <h2 className="etched-text" style={{ fontSize: '6vw', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
+        <h2 className="chromatic-fringe" style={{ fontSize: '8vw', fontFamily: 'Syne', marginBottom: '60px' }}>ESTABLISH_COMM</h2>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '100px' }}>
           {['INSTAGRAM', 'WHATSAPP', 'EMAIL'].map(c => (
-            <a key={c} href="#" className="mono-detail" style={{ textDecoration: 'none', color: '#D4AF37', fontSize: '0.8rem', letterSpacing: '8px' }}>{c}</a>
+            <a key={c} href="#" className="chromatic-fringe" style={{ textDecoration: 'none', color: '#00FFCC', fontSize: '0.8rem', letterSpacing: '8px' }}>{c}</a>
           ))}
         </div>
       </footer>
